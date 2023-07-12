@@ -5,7 +5,7 @@ export current=$PWD
 if grep -q "nameserver 8.8.8.8" /etc/resolv.conf; then
 	echo "/etc/resolv.conf is good to go!"
 else
-	echo "nameserver 8.8.8.8" | tee -a /etc/resolv.conf >/dev/null
+	echo "nameserver 8.8.8.8" | sudo tee -a /etc/resolv.conf >/dev/null
 fi
 
 # Useful packages
@@ -49,11 +49,12 @@ output=$(sudo /opt/nvidia/jetson-io/config-by-hardware.py -l)
 
 regex="User Custom \[[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}\]"
 
-if [[ "$output" =~ $regex]]; then
+if [[ "$output" =~ $regex ]]; then
 	extracted_content=${BASH_REMATCH[0]}
 	echo "Extracted content: $extracted_content"
+	sudo /opt/nvidia/jetson-io/config-by-hardware.py -n "$extracted_content"
 else
-	echo "User custom value not found. (Error: /opt/nvidia/jetson-io/config-by-hardware.py -l)"
+	echo "User custom dtb value not found."
 fi
 
 # Clone eMMC
@@ -64,6 +65,11 @@ git clone https://github.com/limengdu/bootFromUSB
 cd bootFromUSB/
 
 #./copyRootToUSB.sh -p /dev/mmcblk1p1
+# To boot from sd card
+# Before reboot Modify "/boot/extlinux/extlinux.conf" 
+# After reboot view "/media/seeed/{xxx-xxx}/boot/extlinux/extlinux.conf"
+# Change root= under LABEL primary and JetsonIO
+#	to /dev/mmcblk1p1 for SD card and /dev/mmcblk0p1 for EMMC 
 
 # Install gstreamer
 cd $current
